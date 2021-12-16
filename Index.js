@@ -1,9 +1,12 @@
 //Require classes needed for discord.js
 const {Client, Intents, Collection} = require('discord.js');
+const {REST} = require('@discordjs/rest');
+const {Routes} = require('discord-api-types/v9')
 //Require discord bot TOKEN
-const {TOKEN} = require('./DISC_config/config.json');
+const {TOKEN, GuildID, ClientID} = require('./DISC_config/config.json');
 //Require filesystem (fs)
 const fs = require('fs');
+
 
 
 //Create new client instance
@@ -21,7 +24,7 @@ client.commands = new Collection();
 for (const fileName of commandFiles) {
     const command = require(`./Commands/${fileName}`);
     commands.push(command.data.toJSON());
-    client.command.set(command.data.name, command);
+    client.commands.set(command.data.name, command);
 }
 
 
@@ -30,12 +33,41 @@ for (const fileName of commandFiles) {
 
 //Client ready?
 client.once('ready', () => {
+    //Let console know that bot is online
     console.log("Ready");
+    //Registering commands to the client!
+    const ID_CLIENT = client.user.id;
+    const rest = new REST({
+        version: '9'
+    });
+    (async () => {
+        try{
+            if(!GuildID){
+                await rest.put(
+                    Routes.applicationCommands(ID_CLIENT),  {
+                        body: commands
+                    },
+                );
+                console.log("added");
+            }   else {
+                await rest.put(
+                    Routes.applicationGuildCommands(ID_CLIENT, GuildID), {
+                        body: commands
+                    },
+                );
+                console.log("added application commands")
+            }
+        }catch  (error) {
+            if (error) console.error(error);
+        }
+    })
+})();
 
+
+//Client ready!
+client.on('ready', () => {
+    console.log("online!")
 })
-
-
-
 
 
 
