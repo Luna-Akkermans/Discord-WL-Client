@@ -1,5 +1,5 @@
 //Require classes needed for discord.js
-const {Client, Intents, Collection} = require('discord.js');
+const {Client, Intents, Collection, interaction} = require('discord.js');
 const {REST} = require('@discordjs/rest');
 const {Routes} = require('discord-api-types/v9')
 //Require discord bot TOKEN
@@ -28,48 +28,49 @@ for (const fileName of commandFiles) {
 }
 
 
-
-
-
 //Client ready?
 client.once('ready', () => {
-    //Let console know that bot is online
-    console.log("Ready");
-    //Registering commands to the client!
-    const ID_CLIENT = client.user.id;
+    console.log('Ready!');
+    // Registering the commands in the client
+    const CLIENT_ID = client.user.id;
     const rest = new REST({
         version: '9'
-    });
+    }).setToken(TOKEN);
     (async () => {
-        try{
-            if(!GuildID){
+        try {
+            if (!GuildID) {
                 await rest.put(
-                    Routes.applicationCommands(ID_CLIENT),  {
+                    Routes.applicationCommands(CLIENT_ID), {
                         body: commands
                     },
                 );
-                console.log("added");
-            }   else {
+                console.log('Successfully registered application commands globally');
+            } else {
                 await rest.put(
-                    Routes.applicationGuildCommands(ID_CLIENT, GuildID), {
+                    Routes.applicationGuildCommands(CLIENT_ID, GuildID), {
                         body: commands
                     },
                 );
-                console.log("added application commands")
+                console.log('Successfully registered application commands for development guild');
             }
-        }catch  (error) {
+        } catch (error) {
             if (error) console.error(error);
         }
-    })
-})();
+    })();
+});
 
 
 //Client ready!
-client.on('ready', () => {
-    console.log("online!")
-})
-
-
-
+client.on('interactionCreate', async interaction => {
+    if (!interaction.isCommand()) return;
+    const command = client.commands.get(interaction.commandName);
+    if (!command) return;
+    try {
+            await command.execute(interaction);
+    } catch (error) {
+        if (error) console.error(error);
+        await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+    }
+});
 
 client.login(TOKEN);

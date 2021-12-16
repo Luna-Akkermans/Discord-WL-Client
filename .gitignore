@@ -1,2 +1,3 @@
 node_modules
 /DISC_config/config.json
+/FTP_config/config.json
