@@ -1,3 +1,5 @@
 node_modules
 /DISC_config/config.json
 /FTP_config/config.json
+/whitelist.json
+/Commands/whitelist.js
